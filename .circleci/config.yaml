@@ -1,0 +1,82 @@
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:lts
+
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-{{ checksum "yarn.lock" }}
+
+      - run:
+          name: Install Dependencies
+          command: yarn install --frozen-lockfile
+
+      - run:
+          name: Run Tests
+          command: yarn test
+
+      - run:
+          name: Build Project
+          command: yarn build
+
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+
+      - persist_to_workspace:
+          root: ~/repo
+          paths: .
+
+  publishDryRun:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+
+      - run:
+          name: Check Package Version Valid on NPM
+          command: ./.circleci/check_npm_version.sh
+
+  publish:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/.npmrc
+      - run:
+          name: Publish package
+          command: |
+            # Sometimes we just wanna update the readme file
+            if ./.circleci/check_npm_version.sh; then
+              npm run dist
+            fi
+workflows:
+  version: 2
+  install-publish:
+    jobs:
+      - build
+      - publishDryRun:
+          requires:
+            - build
+          filters:
+            branches:
+              ignore:
+                - master
+      - publish:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
