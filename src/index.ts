@@ -71,6 +71,21 @@ const extractVariableDefNodeInfo = (node: any) => {
   };
 };
 
+const extractStructDefNodeInfo = (node: any) => {
+  const { name } = node;
+  const members = node.members.map(x => {
+    return {
+      name: x.name,
+      type: x.typeDescriptions.typeString
+    };
+  });
+
+  return {
+    name,
+    members
+  };
+};
+
 // Everything in a plugin must happen inside an exported function
 extendEnvironment((env: any) => {
   // Force env to generate AST
@@ -161,6 +176,7 @@ task("build:ast-doc", "Generate document representation (in JSON) from AST")
     const eventDefs = filterDefForNodeType("EventDefinition");
     const variableDefs = filterDefForNodeType("VariableDeclaration");
     const modifierDefs = filterDefForNodeType("ModifierDefinition");
+    const structDefs = filterDefForNodeType("StructDefinition");
 
     // Massage data so the contract source (e.g. "contracts/Parent.sol")
     // is now the key
@@ -194,6 +210,10 @@ task("build:ast-doc", "Generate document representation (in JSON) from AST")
       modifierDefs,
       extractModifierDefNodeInfo
     );
+    const structsInContracts = massageToInContracts(
+      structDefs,
+      extractStructDefNodeInfo
+    );
 
     // Merge everything together and extract out
     const astDocOutput = contractNames
@@ -203,7 +223,8 @@ task("build:ast-doc", "Generate document representation (in JSON) from AST")
             functions: functionsInContracts[x],
             events: eventsInContracts[x],
             variables: variablesInContracts[x],
-            modifiers: modifiersInContracts[x]
+            modifiers: modifiersInContracts[x],
+            structs: structsInContracts[x]
           }
         };
       })

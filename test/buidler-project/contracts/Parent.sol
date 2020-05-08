@@ -8,6 +8,11 @@ contract Parent {
     address public owner;
     address public nominatedOwner;
 
+    struct MyCustomStruct {
+        uint aVariable;
+        address bVarible;
+    }
+
     function() external payable {}
 
     constructor(address _owner) public {
