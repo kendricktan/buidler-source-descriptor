@@ -65,7 +65,7 @@ const extractVariableDefNodeInfo = (node: any) => {
 
   return {
     name,
-    signature: `${typeName.typeDescriptions.typeString} ${visibility} ${name}`,
+    type: typeName.typeDescriptions.typeString,
     lineNumber,
     visibility
   };
