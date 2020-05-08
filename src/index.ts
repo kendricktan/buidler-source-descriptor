@@ -72,7 +72,7 @@ const extractVariableDefNodeInfo = (node: any) => {
 };
 
 const extractStructDefNodeInfo = (node: any) => {
-  const { name } = node;
+  const { name, lineNumber } = node;
   const members = node.members.map(x => {
     return {
       name: x.name,
@@ -82,7 +82,8 @@ const extractStructDefNodeInfo = (node: any) => {
 
   return {
     name,
-    members
+    members,
+    lineNumber
   };
 };
 
