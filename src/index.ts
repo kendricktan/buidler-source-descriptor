@@ -162,7 +162,9 @@ task("build:ast-doc", "Generate document representation (in JSON) from AST")
               parseInt(offset, 10)
             );
 
-            const lineNumber = (sourceCodeTillOffset.match(/\n/g) || []).length;
+            // Line number starts at 1
+            const lineNumber =
+              1 + (sourceCodeTillOffset.match(/\n/g) || []).length;
 
             return { lineNumber, ...x };
           });
