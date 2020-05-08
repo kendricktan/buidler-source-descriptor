@@ -14,6 +14,7 @@ usePlugin('buidler-ast-doc');
 ```
 
 ```shell
+npm buidler compile
 npx buidler build:ast-doc --ast-doc-dir ./build/cache/docs
 ```
 
