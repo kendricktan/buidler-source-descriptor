@@ -212,20 +212,26 @@ task("build:ast-doc", "Generate document representation (in JSON) from AST")
       }, {});
 
     // Inject in each contract's description
-    const astDocOutputWithMetadata = Object.keys(astDocOutput).map(x => {
-      const metadata = solcOutput.sources[x].ast.nodes
-        .filter(n => n.nodeType === "ContractDefinition")
-        .map(n => {
-          return {
-            documentation: n.documentation,
-            contractName: n.name
-          };
-        });
-      return {
-        metadata,
-        ...astDocOutput[x]
-      };
-    });
+    const astDocOutputWithMetadata = Object.keys(astDocOutput)
+      .map(x => {
+        const metadata = solcOutput.sources[x].ast.nodes
+          .filter(n => n.nodeType === "ContractDefinition")
+          .map(n => {
+            return {
+              documentation: n.documentation,
+              contractName: n.name
+            };
+          });
+        return {
+          [x]: {
+            metadata,
+            ...astDocOutput[x]
+          }
+        };
+      })
+      .reduce((acc, x) => {
+        return { ...acc, ...x };
+      }, {});
 
     // Write to file
     if (!fs.existsSync(astDocDir)) {
