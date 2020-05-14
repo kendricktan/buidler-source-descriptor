@@ -5,7 +5,7 @@ import { isObject } from "util";
 
 // Extract information from node types
 const extractFunctionDefNodeInfo = (node: any) => {
-  const { lineNumber, name, documentation, visibility } = node;
+  const { lineNumber, name, visibility } = node;
   const parameters = node.parameters.parameters.map(
     (x: any) => `${x.typeDescriptions.typeString} ${x.name}`
   );
@@ -26,14 +26,13 @@ const extractFunctionDefNodeInfo = (node: any) => {
     returns: `(${returnParams.join(", ")})`,
     events,
     modifiers,
-    documentation,
     visibility,
     lineNumber
   };
 };
 
 const extractModifierDefNodeInfo = (node: any) => {
-  const { name, visibility, documentation, lineNumber } = node;
+  const { name, visibility, lineNumber } = node;
   const parameters = node.parameters.parameters.map(
     (x: any) => `${x.typeDescriptions.typeString} ${x.name}`
   );
@@ -41,7 +40,6 @@ const extractModifierDefNodeInfo = (node: any) => {
   return {
     name,
     parameters: `(${parameters.join(", ")})`,
-    documentation,
     visibility,
     lineNumber
   };
@@ -107,8 +105,8 @@ task("build:ast-doc", "Generate document representation (in JSON) from AST")
     const solcOutput = require(path.resolve(cachePath, "solc-output.json"));
 
     // Get contracts from solc output
-    const contractNames = Object.keys(solcOutput.sources);
-    const asts: any[] = contractNames.map(x => {
+    const contractSources = Object.keys(solcOutput.sources);
+    const asts: any[] = contractSources.map(x => {
       return {
         contractSource: x,
         ast: solcOutput.sources[x].ast
@@ -121,14 +119,12 @@ task("build:ast-doc", "Generate document representation (in JSON) from AST")
       .map(x => {
         const { contractSource, ast } = x;
 
-        // Try and
-
         return ast.nodes
           .filter(y => {
             return y.nodeType === "ContractDefinition";
           })
           .map(y => {
-            return { contractSource, ...y };
+            return { contractSource, contractName: y.name, [y.name]: { ...y } };
           });
       })
       .reduce((acc, x) => acc.concat(x), []);
@@ -137,11 +133,13 @@ task("build:ast-doc", "Generate document representation (in JSON) from AST")
     // and inject in line numbers into each definition
     const filterDefForNodeType = t => {
       return astsDef.map(d => {
-        const { contractSource, nodes } = d;
+        const { contractSource, contractName } = d;
+        const { nodes } = d[contractName];
+
         return nodes
           .filter(x => x.nodeType === t)
           .map(x => {
-            return { contractSource, ...x };
+            return { contractSource, contractName, ...x };
           })
           .map(x => {
             if (x.src === undefined) {
@@ -179,19 +177,47 @@ task("build:ast-doc", "Generate document representation (in JSON) from AST")
     const modifierDefs = filterDefForNodeType("ModifierDefinition");
     const structDefs = filterDefForNodeType("StructDefinition");
 
-    // Massage data so the contract source (e.g. "contracts/Parent.sol")
-    // is now the key
+    // Massage data so the contractSource will be the key (e.g. "constract/Parent.sol")
+    // While the contractName will be the inner key
+    /*
+    {
+      Multiple.sol: {
+        One: [...node],
+        Two: [...node]
+      }
+    }
+    */
     const massageToInContracts = (defs, extractFunc) => {
       return defs.reduce((acc, x) => {
         const f = x.reduce((acc2, n) => {
-          acc2[n.contractSource] = Array.prototype.concat(
-            acc2[n.contractSource] || [],
+          // Copy the accumulator
+          const accCopy = { ...acc2 };
+
+          if (accCopy[n.contractSource] === undefined) {
+            accCopy[n.contractSource] = {};
+          }
+
+          accCopy[n.contractSource][n.contractName] = Array.prototype.concat(
+            accCopy[n.contractSource][n.contractName] || [],
             extractFunc(n)
           );
-          return acc2;
+
+          return accCopy;
         }, {});
 
-        return { ...acc, ...f };
+        if (Object.keys(f).length === 0) {
+          return acc;
+        }
+
+        const fKey = Object.keys(f)[0];
+        const mergedF = {
+          [fKey]: {
+            ...acc[fKey],
+            ...f[fKey]
+          }
+        };
+
+        return { ...acc, ...mergedF };
       }, {});
     };
 
@@ -216,16 +242,62 @@ task("build:ast-doc", "Generate document representation (in JSON) from AST")
       extractStructDefNodeInfo
     );
 
-    // Merge everything together and extract out
-    const astDocOutput = contractNames
+    // Merge everything together
+    const astDocOutput = contractSources
       .map(x => {
+        const contractNames = Object.keys({
+          ...functionsInContracts[x],
+          ...eventsInContracts[x],
+          ...variablesInContracts[x],
+          ...modifiersInContracts[x],
+          ...structsInContracts[x]
+        });
+
+        // Just an ad-hoc helper function
+        const hf = (a, b, c) => {
+          try {
+            return a[b][c];
+          } catch (e) {
+            return [];
+          }
+        };
+
+        const contractWithContext = contractNames
+          .map(y => {
+            return {
+              [y]: {
+                functions: hf(functionsInContracts, x, y),
+                events: hf(eventsInContracts, x, y),
+                variables: hf(variablesInContracts, x, y),
+                modifiers: hf(modifiersInContracts, x, y),
+                structs: hf(structsInContracts, x, y)
+              }
+            };
+          })
+          .reduce((acc, y) => {
+            return { ...acc, ...y };
+          }, {});
+
+        return {
+          [x]: contractWithContext
+        };
+      })
+      .reduce((acc, x) => {
+        return { ...acc, ...x };
+      }, {});
+
+    // Inject metadata into the formatted ast doc output
+    // e.g. all contracts will now be in contracts key
+    const astDocOutputFixed1 = Object.keys(astDocOutput)
+      .map(x => {
+        const imports = solcOutput.sources[x].ast.nodes
+          .filter(n => n.nodeType === "ImportDirective")
+          .map(n => n.absolutePath);
+
         return {
           [x]: {
-            functions: functionsInContracts[x],
-            events: eventsInContracts[x],
-            variables: variablesInContracts[x],
-            modifiers: modifiersInContracts[x],
-            structs: structsInContracts[x]
+            imports,
+            contracts: { ...astDocOutput[x] }
           }
         };
       })
@@ -233,21 +305,31 @@ task("build:ast-doc", "Generate document representation (in JSON) from AST")
         return { ...acc, ...x };
       }, {});
 
-    // Inject in each contract's description
-    const astDocOutputWithMetadata = Object.keys(astDocOutput)
+    // Injects in inheritance for each contract
+    const astDocOutputFixed2 = Object.keys(astDocOutputFixed1)
       .map(x => {
-        const metadata = solcOutput.sources[x].ast.nodes
-          .filter(n => n.nodeType === "ContractDefinition")
-          .map(n => {
-            return {
-              documentation: n.documentation,
-              contractName: n.name
-            };
-          });
+        // Get all inheritance for each contract
+        const inherits = Object.keys(astDocOutputFixed1[x].contracts).map(y => {
+          const i = solcOutput.sources[x].ast.nodes.filter(
+            n => n.nodeType === "ContractDefinition" && n.name === y
+          )[0];
+
+          return {
+            name: y,
+            inherits: i.baseContracts.map(z => z.baseName.name)
+          };
+        });
+
+        const astOutputCopy: any = { ...astDocOutputFixed1[x] };
+
+        // I'm mutating state here, shoot me
+        inherits.map(y => {
+          astOutputCopy.contracts[y.name].inherits = y.inherits;
+        });
+
         return {
           [x]: {
-            metadata,
-            ...astDocOutput[x]
+            ...astOutputCopy
           }
         };
       })
@@ -261,6 +343,6 @@ task("build:ast-doc", "Generate document representation (in JSON) from AST")
     }
     fs.writeFileSync(
       path.resolve(astDocDir, "ast-docs.json"),
-      JSON.stringify(astDocOutputWithMetadata, null, 4)
+      JSON.stringify(astDocOutputFixed2, null, 4)
     );
   });

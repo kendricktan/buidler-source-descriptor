@@ -4,5 +4,6 @@ import "./Parent.sol";
 
 contract Child is Parent {
     function myFunction() external onlyOwner {
+        emit OwnerNominated(msg.sender);
     }
 }
