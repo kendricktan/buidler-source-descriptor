@@ -1,6 +1,6 @@
 {
   "name": "buidler-ast-doc",
-  "version": "0.0.8-rc",
+  "version": "0.0.9-rc",
   "description": "Buidler plugin for rich documentation",
   "repository": "github:kendricktan/buidler-ast-doc",
   "author": "Kendrick Tan",

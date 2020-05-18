@@ -23,14 +23,17 @@ export const getLineNumberFromOffset = (
 
   let sourceCode;
   if (isObject(solcInput.sources[contractSource])) {
+    // Solidity >= v0.5.0
     sourceCode = solcInput.sources[contractSource].content;
   } else {
+    // Solidity < v0.5.0
     sourceCode = solcInput.sources[contractSource];
   }
 
   const sourceCodeTillOffset = sourceCode.substring(0, parseInt(offset, 10));
 
   // Line number starts at 1
+  // Match number of new lines
   const lineNumber = 1 + (sourceCodeTillOffset.match(/\n/g) || []).length;
 
   return lineNumber;
@@ -38,7 +41,7 @@ export const getLineNumberFromOffset = (
 
 // Extract information from node types (This is a partial function...)
 export const extractFunctionDefNodeInfo = (solcInput, node) => {
-  const { lineNumber, name, visibility } = node;
+  const { lineNumber, name, visibility, payable, stateMutability } = node;
   const parameters = node.parameters.parameters.map(
     x => `${x.typeDescriptions.typeString} ${x.name}`
   );
@@ -99,12 +102,14 @@ export const extractFunctionDefNodeInfo = (solcInput, node) => {
           });
 
   return {
-    name: name === "" ? node.kind : name,
-    signature: `${name}(${parameters.join(", ")}) ${visibility}`,
+    name: name === "" ? node.kind : name, // Account for fallback function
+    signature: `${name}(${parameters.join(", ")})`,
     returns: `(${returnParams.join(", ")})`,
     events,
+    payable,
     modifiers,
     visibility,
+    stateMutability,
     requires,
     lineNumber
   };
