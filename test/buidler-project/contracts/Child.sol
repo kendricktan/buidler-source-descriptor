@@ -4,11 +4,13 @@ import "./Parent.sol";
 
 
 contract Child is Parent {
+    uint256 constant myConstantVar = 3276;
+
     function _fWithRequire() internal {
         require(true, "False is true");
     }
 
-    function _fWithRequireArgs(uint i) internal {
+    function _fWithRequireArgs(uint256 i) internal {
         require(i > 0 && i <= 5, "i not in range");
     }
 

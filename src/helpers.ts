@@ -143,10 +143,11 @@ export const extractEventDefNodeInfo = (node: any) => {
 };
 
 export const extractVariableDefNodeInfo = (node: any) => {
-  const { name, lineNumber, visibility, typeName } = node;
+  const { name, constant, lineNumber, visibility, typeName } = node;
 
   return {
     name,
+    constant,
     type: typeName.typeDescriptions.typeString,
     lineNumber,
     visibility
