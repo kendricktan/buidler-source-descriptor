@@ -1,7 +1,7 @@
 {
   "name": "buidler-ast-doc",
-  "version": "0.0.11-rc",
-  "description": "Buidler plugin for rich documentation",
+  "version": "0.0.12-rc",
+  "description": "A buidler plugin to generate richer documentation for your solidity contracts",
   "repository": "github:kendricktan/buidler-ast-doc",
   "author": "Kendrick Tan",
   "license": "MIT",
@@ -10,6 +10,9 @@
   "keywords": [
     "ethereum",
     "smart-contracts",
+    "ast",
+    "documentation",
+    "solidity",
     "buidler",
     "buidler-plugin"
   ],
