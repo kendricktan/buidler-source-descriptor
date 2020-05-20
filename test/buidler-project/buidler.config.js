@@ -11,5 +11,10 @@ module.exports = {
     tests: "./test/contracts",
     artifacts: "./build/artifacts",
     cache: "./build/cache"
+  },
+  astdocs: {
+    path: "./build/ast",
+    file: "ast.json",
+    ignores: "ERC20"
   }
 };
