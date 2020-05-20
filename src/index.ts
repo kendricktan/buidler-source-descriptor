@@ -1,7 +1,9 @@
 import { extendEnvironment, task } from "@nomiclabs/buidler/config";
+import {
+  SOLC_INPUT_FILENAME,
+  SOLC_OUTPUT_FILENAME
+} from "@nomiclabs/buidler/internal/constants";
 import { BuidlerPluginError, lazyObject } from "@nomiclabs/buidler/plugins";
-import { SOLC_INPUT_FILENAME, SOLC_OUTPUT_FILENAME } from "@nomiclabs/buidler/internal/constants";
-
 import fs from "fs";
 import path from "path";
 
@@ -9,10 +11,10 @@ import { extractASTInformation } from "./helpers";
 
 export class ASTDocsBuidlerEnvironment {
   constructor(
-    public readonly path: string = undefined,
+    public readonly path: string = null,
     public readonly file: string = "ast-docs.json",
     public readonly ignores: string = ""
-  ) { }
+  ) {}
 }
 
 declare module "@nomiclabs/buidler/types" {
@@ -114,4 +116,4 @@ const createAST = ({ bre }) => {
     path.resolve(astDocDir, astdocs.file),
     JSON.stringify(astDocsData, null, 4)
   );
-}
+};
