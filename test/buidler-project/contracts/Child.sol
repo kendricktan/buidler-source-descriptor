@@ -1,9 +1,12 @@
 pragma solidity ^0.5.0;
 
 import "./Parent.sol";
+import "./SafeMath.sol";
 
 
 contract Child is Parent {
+    using SafeMath for uint256;
+
     uint256 constant myConstantVar = 3276;
 
     function _fWithRequire() internal {

@@ -343,8 +343,8 @@ export const extractASTInformation = (solcInput, solcOutput, contractKind) => {
       return { ...acc, ...x };
     }, {});
 
-  // Injects in inheritance and imports for each contract
-  const astDocOutputFixedWithInherits = Object.keys(astDocOutputFixed)
+  // Injects in libraries and imports for each contract
+  const astDocOutputFinal = Object.keys(astDocOutputFixed)
     .map(x => {
       // Get all inheritance for each contract
       const inherits = Object.keys(astDocOutputFixed[x][contractKind]).map(
@@ -360,11 +360,35 @@ export const extractASTInformation = (solcInput, solcOutput, contractKind) => {
         }
       );
 
+      // Get all libraries for each contract
+      const libraries = Object.keys(astDocOutputFixed[x][contractKind]).map(
+        y => {
+          const i = solcOutput.sources[x].ast.nodes.filter(
+            n => n.nodeType === "ContractDefinition" && n.name === y
+          )[0];
+
+          return {
+            name: y,
+            libraries: i.nodes
+              .filter(z => z.nodeType === "UsingForDirective")
+              .map(x => {
+                return {
+                  name: x.libraryName.name,
+                  type: x.typeName.name
+                };
+              })
+          };
+        }
+      );
+
       const astOutputCopy: any = { ...astDocOutputFixed[x] };
 
       // I'm mutating state here, shoot me
       inherits.map(y => {
         astOutputCopy[contractKind][y.name].inherits = y.inherits;
+      });
+      libraries.map(y => {
+        astOutputCopy[contractKind][y.name].libraries = y.libraries;
       });
 
       return {
@@ -377,5 +401,5 @@ export const extractASTInformation = (solcInput, solcOutput, contractKind) => {
       return { ...acc, ...x };
     }, {});
 
-  return astDocOutputFixedWithInherits;
+  return astDocOutputFinal;
 };

@@ -1,6 +1,6 @@
 {
   "name": "buidler-ast-doc",
-  "version": "0.0.12-rc",
+  "version": "0.0.13-rc",
   "description": "A buidler plugin to generate richer documentation for your solidity contracts",
   "repository": "github:kendricktan/buidler-ast-doc",
   "author": "Kendrick Tan",
