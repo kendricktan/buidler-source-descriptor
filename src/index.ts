@@ -14,7 +14,7 @@ export class ASTDocsBuidlerEnvironment {
     public readonly path: string = null,
     public readonly file: string = "ast-docs.json",
     public readonly ignores: string = ""
-  ) { }
+  ) {}
 }
 
 declare module "@nomiclabs/buidler/types" {
@@ -116,5 +116,9 @@ const createAST = ({ bre }) => {
     path.resolve(astDocDir, astdocs.file),
     JSON.stringify(astDocsData, null, 4)
   );
-  console.log("[buidler-ast-doc]: Wrote AST to", path.join(astDocDir, astdocs.file));
+  
+  console.log(
+    "[buidler-ast-doc]: Wrote AST to",
+    path.join(astDocDir, astdocs.file)
+  );
 };

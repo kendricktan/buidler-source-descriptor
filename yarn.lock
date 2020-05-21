@@ -145,10 +145,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-11.11.6.tgz#df929d1bb2eee5afdda598a41930fe50b43eaa6a"
   integrity sha512-Exw4yUWMBXM3X+8oqzJNRqZSwUAaS4+7NdvHqQuFi/d+synz++xmX3QIf+BFqneW8N31R8Ky+sikfZUXq07ggQ==
 
-"@types/node@^8.10.38":
-  version "8.10.60"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-8.10.60.tgz#73eb4d1e1c8aa5dc724363b57db019cf28863ef7"
-  integrity sha512-YjPbypHFuiOV0bTgeF07HpEEqhmHaZqYNSdCKeBJa+yFoQ/7BC+FpJcwmi34xUIIRVFktnUyP1dPU8U0612GOg==
+"@types/node@^10.17.24":
+  version "10.17.24"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.24.tgz#c57511e3a19c4b5e9692bb2995c40a3a52167944"
+  integrity sha512-5SCfvCxV74kzR3uWgTYiGxrd69TbT1I6+cMx1A5kEly/IVveJBimtAMlXiEyVFn5DvUFewQWxOOiJhlxeQwxgA==
 
 abort-controller@^3.0.0:
   version "3.0.0"
