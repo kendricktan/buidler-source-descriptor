@@ -3,7 +3,7 @@
 # Quickstart
 
 ```shell
-npm install buidler-ast-doc
+npm install buidler-source-descriptor
 ```
 
 Add this to your `buidler.config.js`:

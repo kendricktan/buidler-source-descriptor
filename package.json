@@ -1,5 +1,5 @@
 {
-  "name": "buidler-ast-doc",
+  "name": "buidler-source-descriptor",
   "version": "0.0.14-rc",
   "description": "A buidler plugin to generate richer documentation for your solidity contracts",
   "repository": "github:kendricktan/buidler-ast-doc",
