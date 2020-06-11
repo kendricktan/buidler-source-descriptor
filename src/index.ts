@@ -116,7 +116,7 @@ const createAST = ({ bre }) => {
     path.resolve(astDocDir, astdocs.file),
     JSON.stringify(astDocsData, null, 4)
   );
-  
+
   console.log(
     "[buidler-ast-doc]: Wrote AST to",
     path.join(astDocDir, astdocs.file)

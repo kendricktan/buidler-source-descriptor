@@ -11,7 +11,7 @@ Add this to your `buidler.config.js`:
 ```javascript
 const { usePlugin } = require("@nomiclabs/buidler/config");
 
-usePlugin("buidler-ast-doc");
+usePlugin("buidler-source-descriptor");
 
 module.exports = {
   // All fields are optional,
